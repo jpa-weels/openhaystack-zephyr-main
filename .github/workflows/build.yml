@@ -1,0 +1,34 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    container: zephyrprojectrtos/ci:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: openhaystack-zephyr
+      - name: Initialize
+        working-directory: openhaystack-zephyr
+        run: |
+          pip3 install -U west
+          west init -l .
+          west update
+          pip3 install -r ../zephyr/scripts/requirements-base.txt
+      - name: Install Zephyr toolchain
+        run: |
+          wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.13.2/zephyr-sdk-0.13.2-linux-x86_64-setup.run
+          chmod +x zephyr-sdk-0.13.2-linux-x86_64-setup.run
+          ./zephyr-sdk-0.13.2-linux-x86_64-setup.run -- -d ~/zephyr-sdk-0.13.2
+      - name: Build firmware
+        working-directory: openhaystack-zephyr
+        run: |
+          west build -b nrf52840dongle_nrf52840 -s app
+      - name: Archive firmware
+        uses: actions/upload-artifact@v2
+        with:
+          name: firmware
+          path: openhaystack-zephyr/build/zephyr/zephyr.*
