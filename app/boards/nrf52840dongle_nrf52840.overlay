@@ -1,1 +1,12 @@
+&flash0 {
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
 
+        slot0_partition: partition@26000 {
+            label = "image-0";
+            reg = <0x00026000 0x000da000>;
+        };
+    };
+};
